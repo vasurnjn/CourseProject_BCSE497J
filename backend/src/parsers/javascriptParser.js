@@ -3,7 +3,7 @@ import _traverse from '@babel/traverse';
 const traverse = _traverse.default || _traverse;
 import path from 'path';
 
-export function parseJavaScript(fileInfo, allFiles) {
+export function parseJavaScript(fileInfo, allFiles, aliases = []) {
   const { content, path: filePath, language } = fileInfo;
   
   const result = {
@@ -54,10 +54,10 @@ export function parseJavaScript(fileInfo, allFiles) {
       }));
       result.imports.push({ source, specifiers });
       
-      const resolved = resolveImport(source, fileDir, allFiles);
+      const resolved = resolveImport(source, fileDir, allFiles, aliases);
       if (resolved) {
         result.dependencies.push({ source: filePath, target: resolved, type: 'IMPORTS', importSource: source });
-      } else if (!source.startsWith('.')) {
+      } else if (!source.startsWith('.') && !aliases.some(a => source.startsWith(a.prefix))) {
         // external package
         const pkgName = source.startsWith('@') ? source.split('/').slice(0, 2).join('/') : source.split('/')[0];
         result.externalDependencies.push(pkgName);
@@ -72,10 +72,10 @@ export function parseJavaScript(fileInfo, allFiles) {
         if (arg.type === 'StringLiteral') {
           const source = arg.value;
           result.imports.push({ source, specifiers: [], type: 'require' });
-          const resolved = resolveImport(source, fileDir, allFiles);
+          const resolved = resolveImport(source, fileDir, allFiles, aliases);
           if (resolved) {
             result.dependencies.push({ source: filePath, target: resolved, type: 'IMPORTS', importSource: source });
-          } else if (!source.startsWith('.')) {
+          } else if (!source.startsWith('.') && !aliases.some(a => source.startsWith(a.prefix))) {
             const pkgName = source.startsWith('@') ? source.split('/').slice(0, 2).join('/') : source.split('/')[0];
             result.externalDependencies.push(pkgName);
           }
@@ -154,13 +154,27 @@ export function parseJavaScript(fileInfo, allFiles) {
   return result;
 }
 
-function resolveImport(importPath, fromDir, allFiles) {
-  if (!importPath.startsWith('.')) return null;
-  
+function resolveImport(importPath, fromDir, allFiles, aliases = []) {
   const filePaths = allFiles.map(f => f.path);
   const extensions = ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs'];
   
-  const resolved = path.normalize(path.join(fromDir, importPath)).replace(/\\/g, '/');
+  let resolved;
+  
+  if (importPath.startsWith('.')) {
+    // Relative import
+    resolved = path.normalize(path.join(fromDir, importPath)).replace(/\\/g, '/');
+  } else {
+    // Try aliases
+    for (const alias of aliases) {
+      if (importPath.startsWith(alias.prefix)) {
+        // Alias targets are relative to rootDir. allFiles paths are also relative to rootDir.
+        resolved = importPath.replace(alias.prefix, alias.target);
+        break;
+      }
+    }
+  }
+  
+  if (!resolved) return null;
   
   // Exact match
   if (filePaths.includes(resolved)) return resolved;
