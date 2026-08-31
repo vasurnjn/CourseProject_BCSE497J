@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { getProject, getStatistics, getCycles, getUnusedDependencies } from '../services/api';
-import { BarChart2, GitBranch, AlertTriangle, Package, ArrowLeft, Layers, Activity } from 'lucide-react';
+import { BarChart2, GitBranch, AlertTriangle, Package, ArrowLeft, Layers, Activity, Lightbulb } from 'lucide-react';
 import MetricsGrid from '../components/dashboard/MetricsGrid';
-import DependencyGraph3D from '../components/graph/DependencyGraph3D';
+import DependencyGraph from '../components/graph/DependencyGraph';
 import CyclePanel from '../components/analysis/CyclePanel';
 import UnusedDepsPanel from '../components/analysis/UnusedDepsPanel';
 import ImpactPanel from '../components/analysis/ImpactPanel';
+import InsightsPanel from '../components/analysis/InsightsPanel';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: BarChart2 },
-  { id: 'graph', label: '3D Graph', icon: Layers },
+  { id: 'insights', label: 'Architecture Insights', icon: Lightbulb },
+  { id: 'graph', label: 'Dependency Graph', icon: Layers },
   { id: 'cycles', label: 'Circular Deps', icon: GitBranch },
   { id: 'unused', label: 'Unused Deps', icon: Package },
   { id: 'impact', label: 'Impact Analysis', icon: Activity },
@@ -65,6 +67,11 @@ export default function DashboardPage({ projectId, onBack }) {
           <span className="font-medium text-sm">{project?.name || 'Project'}</span>
         </div>
         <div className="ml-auto flex items-center gap-4 text-xs text-[#6b7280]">
+          {stats?.metrics?.insights?.score !== undefined && (
+            <span className="flex items-center gap-1 font-semibold text-indigo-400">
+              Health Score: {stats.metrics.insights.score}
+            </span>
+          )}
           <span>{stats?.metrics?.totalFiles || 0} files</span>
           <span>{stats?.metrics?.totalDependencies || 0} dependencies</span>
           <span>{stats?.metrics?.circularDependencies || 0} cycles</span>
@@ -90,19 +97,27 @@ export default function DashboardPage({ projectId, onBack }) {
                 {stats.metrics.circularDependencies}
               </span>
             )}
+            {id === 'insights' && stats?.metrics?.insights?.score < 70 && (
+              <span className="bg-yellow-500/20 text-yellow-400 text-xs rounded-full px-1.5 py-0.5">
+                !
+              </span>
+            )}
           </button>
         ))}
       </nav>
 
       {/* Content */}
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden">
         {tab === 'overview' && (
           <div className="p-6 overflow-y-auto h-full">
             <MetricsGrid metrics={stats?.metrics} onTabChange={setTab} />
           </div>
         )}
+        {tab === 'insights' && (
+          <InsightsPanel insights={stats?.metrics?.insights} onNodeSelect={handleNodeSelect} />
+        )}
         {tab === 'graph' && (
-          <DependencyGraph3D
+          <DependencyGraph
             projectId={projectId}
             initialSelectedNode={selectedNode}
             onNodeSelect={setSelectedNode}
