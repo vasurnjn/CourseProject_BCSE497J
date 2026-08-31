@@ -9,7 +9,7 @@ export default function NodeInspector({ node, impactData, onImpactAnalysis, onCl
   const classes = node.classes || [];
 
   return (
-    <div className="w-80 border-l border-[#2a2a3a] bg-[#0d0d14] flex flex-col overflow-hidden">
+    <div className="w-64 border-l border-[#2a2a3a] bg-[#0d0d14] flex flex-col overflow-hidden shrink-0">
       {/* Header */}
       <div className="flex items-start justify-between p-4 border-b border-[#2a2a3a]">
         <div className="flex-1 min-w-0">
