@@ -7,6 +7,11 @@
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?logo=javascript&logoColor=black)
 ![License](https://img.shields.io/badge/License-Academic-lightgrey)
 ![Status](https://img.shields.io/badge/Status-Completed-success)
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
+![React](https://img.shields.io/badge/Frontend-React-61DAFB)
+![Node.js](https://img.shields.io/badge/Backend-Node.js-339933)
+![Express](https://img.shields.io/badge/API-Express-black)
+![Status](https://img.shields.io/badge/Status-Live-success)
 
 ---
 
@@ -50,11 +55,9 @@ The platform enables developers to:
 
 # Live Demo
 
-> **Coming Soon**
+🌐 **Application:** [Software Dependency Analysis](https://software-dependency-analysis.onrender.com)
 
-🌐 Application: *(Will be added after deployment)*
-
-📂 GitHub Repository: *(Repository link will be added after publishing)*
+📂 **GitHub Repository:** [CourseProject_BCSE497J](https://github.com/chaitanya-codes/CourseProject_BCSE497J)
 
 ---
 
